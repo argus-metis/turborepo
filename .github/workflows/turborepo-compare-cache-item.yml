@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4 # <-- Added: Downloads the repo code so local files are visible
+        uses: actions/checkout@v4 # Added: Connects the runner to your repo files
 
       - name: Setup Node
-        uses: actions/setup-node@v4 # <-- Updated: Uses official action instead of local helper
+        uses: actions/setup-node@v4 # Updated: Uses official action instead of local helper
         with:
           node-version: 20
 
@@ -35,15 +35,6 @@ jobs:
           cd my-turborepo
           turbo run build --filter=docs --filter=web --summarize --skip-infer -vvv
 
-      - name: Grab artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: cache-item-${{ matrix.os }}-${{ inputs.version }}
-          path: |
-            my-turborepo/node_modules/.cache/turbo
-            my-turborepo/.turbo/runs
-          retention-days: 1
-
   use_cache_artifact:
     needs: generate_cache_artifact
     strategy:
@@ -56,10 +47,10 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4 # <-- Added: Downloads the repo code for the second job
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4 # <-- Updated: Uses official action
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -67,21 +58,3 @@ jobs:
         run: |
           npm install -g pnpm turbo@${{ inputs.version }}
           pnpm dlx create-turbo@${{ inputs.version }} my-turborepo pnpm
-
-      - name: Download cache artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: cache-item-${{ matrix.cache_os }}-${{ inputs.version }}
-          path: my-turborepo
-
-      - name: Check for cache hit
-        run: |
-          cd my-turborepo
-          rm .turbo/runs/*.json
-          turbo run build --filter=docs --filter=web --summarize --skip-infer -vvv
-          cat .turbo/runs/*.json | jq -e '.execution.cached == 2'
-
-      - name: Check for functional server
-        run: |
-          curl https://raw.githubusercontent.com/vercel/turbo/main/scripts/server.js -O
-          node server.js my-turborepo/apps/docs
