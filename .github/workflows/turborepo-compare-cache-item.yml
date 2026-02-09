@@ -17,8 +17,13 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4 # <-- Added: Downloads the repo code so local files are visible
+
       - name: Setup Node
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4 # <-- Updated: Uses official action instead of local helper
+        with:
+          node-version: 20
 
       - name: create-turbo
         run: |
@@ -50,8 +55,13 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4 # <-- Added: Downloads the repo code for the second job
+
       - name: Setup Node
-        uses: ./.github/actions/setup-node
+        uses: actions/setup-node@v4 # <-- Updated: Uses official action
+        with:
+          node-version: 20
 
       - name: create-turbo
         run: |
